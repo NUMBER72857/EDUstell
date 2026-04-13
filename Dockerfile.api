@@ -1,0 +1,47 @@
+FROM rust:1.88-bookworm AS builder
+
+WORKDIR /app
+
+COPY Cargo.toml Cargo.lock ./
+COPY apps/api/Cargo.toml apps/api/Cargo.toml
+COPY crates/shared/Cargo.toml crates/shared/Cargo.toml
+COPY crates/domain/Cargo.toml crates/domain/Cargo.toml
+COPY crates/application/Cargo.toml crates/application/Cargo.toml
+COPY crates/infrastructure/Cargo.toml crates/infrastructure/Cargo.toml
+COPY crates/blockchain/Cargo.toml crates/blockchain/Cargo.toml
+
+RUN mkdir -p apps/api/src crates/shared/src crates/domain/src crates/application/src crates/infrastructure/src crates/blockchain/src \
+    && printf 'fn main() {}\n' > apps/api/src/main.rs \
+    && printf '// build stub\n' > crates/shared/src/lib.rs \
+    && printf '// build stub\n' > crates/domain/src/lib.rs \
+    && printf '// build stub\n' > crates/application/src/lib.rs \
+    && printf '// build stub\n' > crates/infrastructure/src/lib.rs \
+    && printf '// build stub\n' > crates/blockchain/src/lib.rs \
+    && cargo build --release -p api \
+    && rm -rf apps/api/src crates/shared/src crates/domain/src crates/application/src crates/infrastructure/src crates/blockchain/src
+
+COPY . .
+
+RUN cargo build --release -p api
+
+FROM debian:bookworm-slim AS runtime
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY --from=builder /app/target/release/api /usr/local/bin/eduvault-api
+COPY migrations /app/migrations
+COPY scripts /app/scripts
+
+ENV APP_HOST=0.0.0.0
+ENV APP_PORT=8080
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=5 \
+  CMD ["/bin/sh", "-c", "pg_isready -d \"$DATABASE_URL\" >/dev/null 2>&1 && curl -fsS \"http://127.0.0.1:${APP_PORT:-8080}/api/v1/health/ready\" >/dev/null"]
+
+CMD ["eduvault-api"]

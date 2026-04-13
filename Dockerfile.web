@@ -1,0 +1,5 @@
+FROM alpine:3.22
+
+RUN echo "EduVault web image cannot be built from this repository because no web application source exists under apps/web or packages/web." > /BUILD_ERROR \
+    && cat /BUILD_ERROR \
+    && exit 1

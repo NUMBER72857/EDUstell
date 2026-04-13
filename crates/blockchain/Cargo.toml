@@ -1,0 +1,13 @@
+[package]
+name = "blockchain"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+chrono.workspace = true
+serde.workspace = true
+shared = { path = "../shared" }
+thiserror.workspace = true
+uuid.workspace = true

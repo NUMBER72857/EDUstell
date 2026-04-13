@@ -1,0 +1,102 @@
+use std::{sync::Arc, time::Instant};
+
+use infrastructure::db::pool::DatabasePool;
+use infrastructure::{
+    auth::{hasher::Argon2PasswordHasher, jwt::JwtTokenService, repo::PgAuthRepository},
+    notifications::NoopEmailSender,
+    persistence::repos::{
+        PgAuditLogRepository, PgChildProfileRepository, PgContributionRepository,
+        PgContributionWorkflowRepository, PgAchievementCredentialRepository, PgMilestoneRepository,
+        PgNotificationPreferenceRepository, PgNotificationRepository, PgPayoutRepository,
+        PgPayoutWorkflowRepository, PgScholarshipApplicationRepository,
+        PgScholarshipAwardRepository, PgScholarshipPoolRepository, PgScholarshipWorkflowRepository,
+        PgSchoolRepository, PgSchoolWorkflowRepository, PgVaultRepository,
+    },
+};
+
+use crate::{config::Config, metrics::MetricsRegistry};
+
+pub struct AppState {
+    pub config: Config,
+    pub started_at: Instant,
+    pub metrics: Arc<MetricsRegistry>,
+    pub db_pool: DatabasePool,
+    pub auth_repo: PgAuthRepository,
+    pub child_profile_repo: PgChildProfileRepository,
+    pub vault_repo: PgVaultRepository,
+    pub contribution_repo: PgContributionRepository,
+    pub contribution_workflow_repo: PgContributionWorkflowRepository,
+    pub milestone_repo: PgMilestoneRepository,
+    pub school_repo: PgSchoolRepository,
+    pub school_workflow_repo: PgSchoolWorkflowRepository,
+    pub payout_repo: PgPayoutRepository,
+    pub payout_workflow_repo: PgPayoutWorkflowRepository,
+    pub scholarship_pool_repo: PgScholarshipPoolRepository,
+    pub scholarship_application_repo: PgScholarshipApplicationRepository,
+    pub scholarship_award_repo: PgScholarshipAwardRepository,
+    pub scholarship_workflow_repo: PgScholarshipWorkflowRepository,
+    pub audit_repo: PgAuditLogRepository,
+    pub achievement_credential_repo: PgAchievementCredentialRepository,
+    pub notification_repo: PgNotificationRepository,
+    pub notification_preference_repo: PgNotificationPreferenceRepository,
+    pub email_sender: NoopEmailSender,
+    pub password_hasher: Argon2PasswordHasher,
+    pub token_service: JwtTokenService,
+}
+
+impl AppState {
+    pub fn new(
+        config: Config,
+        metrics: Arc<MetricsRegistry>,
+        db_pool: DatabasePool,
+        auth_repo: PgAuthRepository,
+        child_profile_repo: PgChildProfileRepository,
+        vault_repo: PgVaultRepository,
+        contribution_repo: PgContributionRepository,
+        contribution_workflow_repo: PgContributionWorkflowRepository,
+        milestone_repo: PgMilestoneRepository,
+        school_repo: PgSchoolRepository,
+        school_workflow_repo: PgSchoolWorkflowRepository,
+        payout_repo: PgPayoutRepository,
+        payout_workflow_repo: PgPayoutWorkflowRepository,
+        scholarship_pool_repo: PgScholarshipPoolRepository,
+        scholarship_application_repo: PgScholarshipApplicationRepository,
+        scholarship_award_repo: PgScholarshipAwardRepository,
+        scholarship_workflow_repo: PgScholarshipWorkflowRepository,
+        audit_repo: PgAuditLogRepository,
+        achievement_credential_repo: PgAchievementCredentialRepository,
+        notification_repo: PgNotificationRepository,
+        notification_preference_repo: PgNotificationPreferenceRepository,
+        email_sender: NoopEmailSender,
+        password_hasher: Argon2PasswordHasher,
+        token_service: JwtTokenService,
+    ) -> Self {
+        Self {
+            config,
+            started_at: Instant::now(),
+            metrics,
+            db_pool,
+            auth_repo,
+            child_profile_repo,
+            vault_repo,
+            contribution_repo,
+            contribution_workflow_repo,
+            milestone_repo,
+            school_repo,
+            school_workflow_repo,
+            payout_repo,
+            payout_workflow_repo,
+            scholarship_pool_repo,
+            scholarship_application_repo,
+            scholarship_award_repo,
+            scholarship_workflow_repo,
+            audit_repo,
+            achievement_credential_repo,
+            notification_repo,
+            notification_preference_repo,
+            email_sender,
+            password_hasher,
+            token_service,
+        }
+    }
+}
